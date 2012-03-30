@@ -4,6 +4,7 @@
  */
 package com.redhat.engineering.jenkins.testparser;
 
+import com.redhat.engineering.jenkins.testparser.results.MethodResult;
 import com.redhat.engineering.jenkins.testparser.results.PackageResult;
 import com.redhat.engineering.jenkins.testparser.results.TestResults;
 import hudson.FilePath;
@@ -44,10 +45,20 @@ public class ReportPluginParserTest {
    public void testTestngXmlWithExistingResultXml() {
       String filename = "sample-testng-results.xml";
       URL resource = ReportPluginParserTest.class.getClassLoader().getResource(filename);
-      junit.framework.Assert.assertNotNull(resource);
+      assertNotNull(resource);
       TestResults results = (TestResults)getResults(resource.getFile());
-      junit.framework.Assert.assertFalse("Collection shouldn't have been empty", results.getTestList().isEmpty());
-   }
+      assertFalse("Collection shouldn't have been empty", results.getTestList().isEmpty());
+      results.tally();
+      assertEquals(1,results.getFailedTestCount());
+      assertEquals(1,results.getFailedConfigs().size());
+
+      assertEquals("testSetUp", results.getFailedConfigs().get(0).getName());
+      assertEquals("test", results.getFailedTests().get(0).getName());
+      assertEquals("Test all FT specific API\'s on BAT setup. This test calls FT APIs createSecondary, disableSecondary, enableSecondary and removeSecondary on a VM in powered off state and powers on the VM after calling each of these APIs to verify FT functionality",
+                   results.getFailedTests().get(0).getDescription());
+
+      
+    }
 
    @Test
    public void testTestngXmlWithSameTestNameDiffSuites() {
