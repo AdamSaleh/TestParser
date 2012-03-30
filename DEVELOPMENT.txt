@@ -1,0 +1,87 @@
+Author: Jan Rusnacko (jrusnack at redhat.com)
+
+===============================================================================
+								DEVELOPMENT COMMENTS
+===============================================================================
+
+1. FEATURES
+----------------------
+a) compatible with JUnit
+b) compatible with TestNG
+c) available for freestyle projects
+d) available for multiconfiguration (matrix) projects
+e) for matrix projects, allow filtering of results based on filtered conmfiguration
+
+
+2. NAMING CONVENTION
+--------------------
+
+Project type is either matrix or freestyle:
+
+		Project = {matrix/multiconf, freestyle} 
+
+Matrix/multiconf. project has several configurations:
+
+		Project
+			* Configuration #1 (X= ..., Y= ...)
+			* Configuration #2 (X= ..., Y= ...)
+
+One Jenkins Project has several builds. 
+
+		Project
+			* Build #1
+			* Build #2
+			* ...
+
+If Project is matrix, then it`s builds have several matrix runs, and each run 
+corresponds to a configuration:
+		
+		Project
+			* Build #1
+				* Run (X= ..., Y= ...)
+				* Run (X= ..., Y= ...)
+			* Build #2
+				* Run (X= ..., Y= ...)
+				* Run (X= ..., Y= ...)
+
+ATTENTION: If Project is freestyle, we say it has exactly one run (even though 
+it does not really) and this run is equal to the build. This is artificially 
+defined as such to allow concurrently developed tcmsPlugin use our parser (
+mapping Jenkins`s projects, builds and runs will become consistent)
+
+		Freestyle Project
+			* Build #1
+				* Run == Build #1
+			* Build #2
+				* Run == Build #2
+
+
+The same trick works for Matrix Runs, where we say that Matrix Run has exactly 
+one run, wich is again equal to itself.
+
+		Matrix Project
+			* MatrixBuild
+				* Matrix Run #1
+					* Run == Matrix Run #1
+				* Matrix Run #2
+					* Run == Matrix Run #2
+
+
+3. STRUCTURE
+------------------------
+
+Interface TestResults provides results via it`s methods. This interface is 
+implemented by both test results of runs and test results of builds !!!
+
+Difference is, runs store real test results and return only one run. Builds on the
+other hand store aggregated results from their runs and allow filtering. However,
+as explained above, there is no difference between build and run if he project 
+is freestyle.
+
+
+
+
+
+
+
+

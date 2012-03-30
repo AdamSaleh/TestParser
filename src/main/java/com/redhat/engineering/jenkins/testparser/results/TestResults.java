@@ -38,8 +38,23 @@ public interface TestResults {
     
     public int getSkippedTestCount();
     
+    public int getFailedConfigCount();
+    
+    public int getSkippedConfigCount();
+    
+    
+    /**
+     * For details see DEVELOPMENT.txt
+     * 
+     * @return true if corresponds to build
+     */
     public  boolean isMatrixBuildTestResult();
     
+    /**
+     * For details see DEVELOPMENT.txt
+     * 
+     * @return true if corresponds to run
+     */
     public boolean isRunTestResult();
     
     

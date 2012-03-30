@@ -49,6 +49,8 @@ public class MatrixBuildTestResults extends BaseResult implements TestResults {
 	skippedConfigCount = 0;
     }
     
+    /** {@inheritDoc}
+     */
     @Override
     public void setOwner(AbstractBuild<?, ?> owner) {
 	
@@ -125,79 +127,134 @@ public class MatrixBuildTestResults extends BaseResult implements TestResults {
 	return false;
     }
 
+    /** {@inheritDoc}
+     */
+    @Override
     public int getFailedConfigCount() {
 	return failedConfigCount;
     }
     
+    /** {@inheritDoc}
+     */
+    @Override
     public int getSkippedConfigCount(){
 	return skippedConfigCount;
     }
 
+    /** {@inheritDoc}
+     */
     @Override
     public boolean isMatrixBuildTestResult() {
 	return true;
     }
 
+    /** {@inheritDoc}
+     */
+    @Override
     public List<MethodResult> getFailedConfigs() {
 	return failedConfigurationMethods;
     }
 
+    /** {@inheritDoc}
+     */
+    @Override
     public List<MethodResult> getSkippedConfigs() {
 	return skippedConfigurationMethods;
     }
     
+    /** {@inheritDoc}
+     */
+    @Override
     public List<MethodResult> getFailedTests(){
 	return failedTests;
     }
 
+    /** {@inheritDoc}
+     */
+    @Override
     public List<MethodResult> getSkippedTests(){
 	return skippedTests;
     }
 
+    /** {@inheritDoc}
+     */
+    @Override
     public List<MethodResult> getPassedTests(){
 	return passedTests;
     }
     
+    /** {@inheritDoc}
+     */
+    @Override
     public List<TestResult> getTestList(){
 	return testList;
     }
     
+    /** {@inheritDoc}
+     */
+    @Override
     public int getTotalTestCount(){
 	return totalTestCount;
     }
-	    
+	  
+    /** {@inheritDoc}
+     */
+    @Override
     public int getPassedTestCount(){
 	return passedTestCount;
     }
     
+    /** {@inheritDoc}
+     */
+    @Override
     public int getFailedTestCount(){
 	return failedTestCount;
     }
     
+    /** {@inheritDoc}
+     */
+    @Override
     public int getSkippedTestCount(){
 	return skippedTestCount;
     }
      
-    
+    /** {@inheritDoc}
+     */
+    @Override
     public List<TestResults> getRunResults(){
 	    return runResults;
     }
     
+    /** {@inheritDoc}
+     */
+    @Override
     public String toString(){
 	return String.format("TestResults {name='%s', totalTests=%d, " +
           "failedTests=%d, skippedTests=%d}", name, totalTestCount, failedTestCount,
           skippedTestCount);
     }
 
+    /** {@inheritDoc}
+     */
+    @Override
     public Set<String>  getPackageNames() {
 	return packageMap.keySet();
     }
 
+    /** 
+     * Don`t do anything, because this class only aggregates test results from
+     * child runs, so we do not add tests directly (call addMatrixRunTestResults)
+     */
+    @Override
     public Map<String, PackageResult> getPackageMap() {
 	return packageMap;
     }
 
 
+    /** 
+     * {@inheritDoc}
+     */
+    @Override
     public void addUniqueTests(List<TestResult> testList) {
 	
 //	Set<TestResult> tmpSet = new HashSet<TestResult>(this.testList);
@@ -205,6 +262,9 @@ public class MatrixBuildTestResults extends BaseResult implements TestResults {
 //	this.testList = new ArrayList<TestResult>(tmpSet);
     }
 
+    /** {@inheritDoc}
+     */
+    @Override
     public void tally() {
 	failedConfigCount = failedConfigurationMethods.size();
 	skippedConfigCount = skippedConfigurationMethods.size();
@@ -242,6 +302,7 @@ public class MatrixBuildTestResults extends BaseResult implements TestResults {
 	}
     }
 
+    @Override
     public boolean isRunTestResult() {
 	return false;
     }

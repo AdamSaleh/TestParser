@@ -34,23 +34,28 @@ public class MatrixRunTestResults extends BaseResult implements TestResults{
 	super(name);
     }
     
+    @Override
     public List<MethodResult> getFailedTests() {
 	return failedTests;
     }
 
+    @Override
     public List<MethodResult> getPassedTests() {
 	return passedTests;
     }
 
+    @Override
     public List<MethodResult> getSkippedTests() {
 	return skippedTests;
     }
 
+    @Override
     public List<TestResult> getTestList() {
 	return testList;
     }
 
     @Exported(name = "total")
+    @Override
     public int getTotalTestCount() {
 	return totalTestCount;
     }
@@ -60,16 +65,19 @@ public class MatrixRunTestResults extends BaseResult implements TestResults{
 	return duration;
     }
 
+    @Override
     public int getPassedTestCount() {
 	return passedTestCount;
     }
 
     @Exported(name = "fail")
+    @Override
     public int getFailedTestCount() {
 	return failedTestCount;
     }
 
     @Exported(name = "skip")
+    @Override
     public int getSkippedTestCount() {
 	return skippedTestCount;
     }
@@ -85,6 +93,7 @@ public class MatrixRunTestResults extends BaseResult implements TestResults{
     * Adds only the <test>s that already aren't part of the list
     * @param classList
     */
+    @Override
     public void addUniqueTests(List<TestResult> testList) {
 	Set<TestResult> tmpSet = new HashSet<TestResult>(this.testList);
 	tmpSet.addAll(testList);
@@ -119,6 +128,7 @@ public class MatrixRunTestResults extends BaseResult implements TestResults{
     /**
      * Updates the calculated fields
      */
+    @Override
     public void tally() {
 	failedTestCount = failedTests.size();
 	passedTestCount = passedTests.size();
@@ -157,10 +167,12 @@ public class MatrixRunTestResults extends BaseResult implements TestResults{
 
 
 
+    @Override
     public Set<String> getPackageNames() {
 	return packageMap.keySet();
     }
 
+    @Override
     public Map<String, PackageResult> getPackageMap() {
 	return packageMap;
     }
@@ -173,14 +185,17 @@ public class MatrixRunTestResults extends BaseResult implements TestResults{
 	return skippedConfigCount;
     }
 
+    @Override
     public List<MethodResult> getFailedConfigs() {
 	return failedConfigurationMethods;
     }
 
+    @Override
     public List<MethodResult> getSkippedConfigs() {
 	return skippedConfigurationMethods;
     }
 
+    @Override
     public boolean isMatrixBuildTestResult() {
 	return false;
     }
@@ -190,6 +205,7 @@ public class MatrixRunTestResults extends BaseResult implements TestResults{
      * 
      * @return List with self as only member
      */
+    @Override
     public List<TestResults> getRunResults() {
 	List<TestResults> runTestResults = new ArrayList<TestResults>();
 	runTestResults.add(this);
@@ -203,6 +219,7 @@ public class MatrixRunTestResults extends BaseResult implements TestResults{
 	return runs;
     }
     
+    @Override
     public boolean isRunTestResult() {
 	return true;
     }

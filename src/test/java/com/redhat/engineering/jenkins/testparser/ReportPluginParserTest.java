@@ -8,6 +8,8 @@ import com.redhat.engineering.jenkins.testparser.results.MethodResult;
 import com.redhat.engineering.jenkins.testparser.results.PackageResult;
 import com.redhat.engineering.jenkins.testparser.results.TestResults;
 import hudson.FilePath;
+import hudson.matrix.MatrixBuild;
+import hudson.matrix.MatrixProject;
 import java.io.File;
 import java.net.URL;
 import java.text.ParseException;
