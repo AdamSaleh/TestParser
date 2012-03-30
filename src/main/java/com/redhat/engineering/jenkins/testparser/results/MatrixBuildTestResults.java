@@ -1,7 +1,9 @@
 
 package com.redhat.engineering.jenkins.testparser.results;
 
+import hudson.matrix.MatrixBuild;
 import hudson.matrix.MatrixRun;
+import hudson.model.AbstractBuild;
 import hudson.model.Result;
 import java.util.*;
 
@@ -17,30 +19,45 @@ public class MatrixBuildTestResults extends BaseResult implements TestResults {
     private List<MethodResult> passedTests = new ArrayList<MethodResult>();
     private List<MethodResult> failedTests = new ArrayList<MethodResult>();
     private List<MethodResult> skippedTests = new ArrayList<MethodResult>();
+    private List<MethodResult> failedConfigurationMethods = new ArrayList<MethodResult>();
+    private List<MethodResult> skippedConfigurationMethods = new ArrayList<MethodResult>();
+    private List<TestResult> testList = new ArrayList<TestResult>();
     private int passedTestCount;
     private int failedTestCount;
     private int skippedTestCount;
     private int totalTestCount;
-    private long duration;
-    private Map<String, MatrixRunTestResults> results = new HashMap<String, MatrixRunTestResults>();
     private int failedConfigCount;
     private int skippedConfigCount;
-    private List<MethodResult> failedConfigurationMethods = new ArrayList<MethodResult>();
-    private List<MethodResult> skippedConfigurationMethods = new ArrayList<MethodResult>();
+    private long duration;
     
     private Map<String, PackageResult> packageMap = new HashMap<String, PackageResult>();
     
-    // stores list of all tests performed 
-    private List<TestResult> testList = new ArrayList<TestResult>();
+    // stores list of all run`s tests: only one for freestyle project, multiple for matrix
+    private List<TestResults> runResults = new ArrayList<TestResults>();
     
-    // stores list of all runs: only one for freestyle project, multiple for matrix
-    private List<TestResults> runs = new ArrayList<TestResults>();
-    private List<TestResults> runTestResults = new ArrayList<TestResults>();
+    // stores list of all runs; only one for freestyle project, multiple for matrix
+    private List<String> runs = new ArrayList<String>();
+    
+    // stores mapping matrix run -> matrix run`s test results
+    private Map<String, MatrixRunTestResults> mrunResults = new HashMap<String, MatrixRunTestResults>();
+      
+    
 
     public MatrixBuildTestResults(String name) {
 	super(name);
 	failedConfigCount = 0;
 	skippedConfigCount = 0;
+    }
+    
+    @Override
+    public void setOwner(AbstractBuild<?, ?> owner) {
+	
+	if(owner instanceof MatrixBuild ){
+	    this.owner = owner;
+	} else{
+	    throw new IllegalArgumentException("Owner of MatrixRunTestResuls"+ 
+		    " must be matrix run");
+	}
     }
     
     /**
@@ -54,10 +71,50 @@ public class MatrixBuildTestResults extends BaseResult implements TestResults {
     public boolean addMatrixRunTestResults(MatrixRun mrun, MatrixRunTestResults results){
 	
 	// test if already added
-	if(this.results.get(mrun.toString()) == null){
-	    this.results.put(mrun.getDisplayName(), results);
-	    // FIXME: update getFailedConfigCount
-	    // FIXME: is owner really the one we should set stability?
+	if(this.mrunResults.get(mrun.toString()) == null){
+	    
+	    // add run to runs of this build
+	    this.runs.add(mrun.toString());
+	    
+	    // add run`s results to results
+	    this.runResults.add(results);
+	    
+	    // add mapping mrun -> mrun`s test results to mrunResults
+	    this.mrunResults.put(mrun.getDisplayName(), results);
+	    
+	    // add all tests from run test list to build`s test list
+	    for(TestResult res : results.getTestList()){
+		this.testList.add(res);
+	    }
+	    
+	    // add all failed configs
+	    for(MethodResult res: results.getFailedConfigs()){
+		this.failedConfigurationMethods.add(res);
+	    }
+	    
+	    // add all skipped configs
+	    for(MethodResult res: results.getSkippedConfigs()){
+		this.skippedConfigurationMethods.add(res);
+	    }
+	    
+	    // add all failed tests
+	    for(MethodResult res: results.getFailedTests()){
+		this.failedTests.add(res);
+	    }
+	    
+	    // add all skipped tests
+	    for(MethodResult res: results.getSkippedTests()){
+		this.skippedTests.add(res);
+	    }
+	    
+	    //add all passed tests
+	    for(MethodResult res: results.getPassedTests()){
+		this.passedTests.add(res);
+	    }
+	    
+	    // update calculated fields
+	    this.tally();
+	    
 	    if (results.getFailedTestCount() > 0){
 		owner.setResult(Result.UNSTABLE);
 	    } else {
@@ -122,8 +179,8 @@ public class MatrixBuildTestResults extends BaseResult implements TestResults {
     }
      
     
-    public List<TestResults> getRuns(){
-	    return runTestResults;
+    public List<TestResults> getRunResults(){
+	    return runResults;
     }
     
     public String toString(){
@@ -142,9 +199,10 @@ public class MatrixBuildTestResults extends BaseResult implements TestResults {
 
 
     public void addUniqueTests(List<TestResult> testList) {
-	Set<TestResult> tmpSet = new HashSet<TestResult>(this.testList);
-	tmpSet.addAll(testList);
-	this.testList = new ArrayList<TestResult>(tmpSet);
+	
+//	Set<TestResult> tmpSet = new HashSet<TestResult>(this.testList);
+//	tmpSet.addAll(testList);
+//	this.testList = new ArrayList<TestResult>(tmpSet);
     }
 
     public void tally() {
@@ -187,5 +245,11 @@ public class MatrixBuildTestResults extends BaseResult implements TestResults {
     public boolean isRunTestResult() {
 	return false;
     }
+
+    @Override
+    public List<String> getRuns() {
+	return runs;
+    }
+
     
 }

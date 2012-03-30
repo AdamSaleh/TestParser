@@ -44,12 +44,15 @@ public interface TestResults {
     
     
     /**
-     * Returns list of runs with either one element (for freestyle project) or 
-     * multiple elements (for multiconf project) that correspond to matrix runs 
+     * Returns list of run`s results with either one element (for freestyle 
+     * project) or multiple elements (for multiconf project) that correspond 
+     * to matrix runs 
      * 
      * @return	List with self in case of freestyle
      */
-    public List<TestResults> getRuns();
+    public List<TestResults> getRunResults();
+    
+    public List<String> getRuns();
     
     public String toString();
 

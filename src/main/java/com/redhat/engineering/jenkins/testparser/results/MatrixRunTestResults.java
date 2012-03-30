@@ -1,6 +1,7 @@
 
 package com.redhat.engineering.jenkins.testparser.results;
 
+import hudson.matrix.MatrixRun;
 import hudson.model.AbstractBuild;
 import java.util.*;
 import org.kohsuke.stapler.export.Exported;
@@ -16,8 +17,10 @@ public class MatrixRunTestResults extends BaseResult implements TestResults{
     private List<MethodResult> passedTests = new ArrayList<MethodResult>();
     private List<MethodResult> failedTests = new ArrayList<MethodResult>();
     private List<MethodResult> skippedTests = new ArrayList<MethodResult>();
-    private int totalTestCount;
+    private List<MethodResult> failedConfigurationMethods = new ArrayList<MethodResult>();
+    private List<MethodResult> skippedConfigurationMethods = new ArrayList<MethodResult>();
     private List<TestResult> testList = new ArrayList<TestResult>();
+    private int totalTestCount;
     private long duration;
     private int failedConfigCount;
     private int skippedConfigCount;
@@ -26,8 +29,6 @@ public class MatrixRunTestResults extends BaseResult implements TestResults{
     private int skippedTestCount;
     private Map<String, PackageResult> packageMap = new HashMap<String, PackageResult>();
     private AbstractBuild<?, ?> owner;
-    private List<MethodResult> failedConfigurationMethods = new ArrayList<MethodResult>();
-    private List<MethodResult> skippedConfigurationMethods = new ArrayList<MethodResult>();
     
     public MatrixRunTestResults(String name){
 	super(name);
@@ -92,7 +93,14 @@ public class MatrixRunTestResults extends BaseResult implements TestResults{
 
     @Override
     public void setOwner(AbstractBuild<?, ?> owner) {
-	this.owner = owner;
+	
+	if(owner instanceof MatrixRun ){
+	    this.owner = owner;
+	} else{
+	    throw new IllegalArgumentException("Owner of MatrixRunTestResuls"+ 
+		    " must be matrix run");
+	}
+	
 	for (TestResult _test : testList) {
 	    _test.setOwner(owner);
 	}
@@ -177,13 +185,28 @@ public class MatrixRunTestResults extends BaseResult implements TestResults{
 	return false;
     }
 
-    public List<TestResults> getRuns() {
+    /**
+     * This method is implemented here for consistency
+     * 
+     * @return List with self as only member
+     */
+    public List<TestResults> getRunResults() {
 	List<TestResults> runTestResults = new ArrayList<TestResults>();
 	runTestResults.add(this);
 	return runTestResults;
     }
-
+    
+    @Override
+    public List<String> getRuns() {
+	List<String> runs = new ArrayList<String>();
+	runs.add(owner.toString());
+	return runs;
+    }
+    
     public boolean isRunTestResult() {
 	return true;
     }
+
+    
+
 }
