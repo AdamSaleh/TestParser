@@ -70,7 +70,11 @@ public class MatrixBuildTestResults extends BaseResult implements TestResults {
      * @param results	
      * @return		false if this run is already mapped to results
      */
-    public boolean addMatrixRunTestResults(MatrixRun mrun, MatrixRunTestResults results){
+    public boolean addMatrixRunTestResults(MatrixRun mrun, TestResults results){
+	
+	if(! (results instanceof MatrixRunTestResults)) {
+	    return false;
+	}
 	
 	// test if already added
 	if(this.mrunResults.get(mrun.toString()) == null){

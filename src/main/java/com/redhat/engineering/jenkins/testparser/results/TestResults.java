@@ -1,6 +1,7 @@
 
 package com.redhat.engineering.jenkins.testparser.results;
 
+import hudson.model.AbstractBuild;
 import java.util.*;
 
 /**
@@ -12,6 +13,15 @@ public interface TestResults {
     
     public  void addUniqueTests(List<TestResult> testList);
     
+    public void setOwner(AbstractBuild<?, ?> owner);
+    
+    public AbstractBuild<?, ?> getOwner();
+    
+    public String getName();
+    
+    public BaseResult getParent();
+    
+    public void setParent(BaseResult parent);
 
     /**
      * Updates calculated fields
