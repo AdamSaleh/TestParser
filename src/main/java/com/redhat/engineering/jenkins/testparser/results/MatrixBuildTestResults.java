@@ -21,6 +21,11 @@ public class MatrixBuildTestResults extends BaseResult implements TestResults {
     private List<MethodResult> skippedTests = new ArrayList<MethodResult>();
     private List<MethodResult> failedConfigurationMethods = new ArrayList<MethodResult>();
     private List<MethodResult> skippedConfigurationMethods = new ArrayList<MethodResult>();
+    private List<MethodResult> passedTestsOrig = new ArrayList<MethodResult>();
+    private List<MethodResult> failedTestsOrig = new ArrayList<MethodResult>();
+    private List<MethodResult> skippedTestsOrig = new ArrayList<MethodResult>();
+    private List<MethodResult> failedConfigurationMethodsOrig = new ArrayList<MethodResult>();
+    private List<MethodResult> skippedConfigurationMethodsOrig = new ArrayList<MethodResult>();
     private List<TestResult> testList = new ArrayList<TestResult>();
     private int passedTestCount;
     private int failedTestCount;
@@ -34,12 +39,15 @@ public class MatrixBuildTestResults extends BaseResult implements TestResults {
     
     // stores list of all run`s tests: only one for freestyle project, multiple for matrix
     private List<TestResults> runResults = new ArrayList<TestResults>();
+    private List<TestResults> runResultsOrig = new ArrayList<TestResults>();
     
     // stores list of all runs; only one for freestyle project, multiple for matrix
     private List<String> runs = new ArrayList<String>();
+    private List<String> runsOrig = new ArrayList<String>();
     
     // stores mapping matrix run -> matrix run`s test results
     private Map<String, MatrixRunTestResults> mrunResults = new HashMap<String, MatrixRunTestResults>();
+    private Filter filter;
       
     
 
@@ -317,6 +325,24 @@ public class MatrixBuildTestResults extends BaseResult implements TestResults {
     public List<String> getRuns() {
 	return runs;
     }
-
     
+    public void addFilter(Filter filter){
+	this.filter = filter;
+	updateFiltered();
+    }
+
+    public void removeFilter(){
+	this.filter = null;
+	updateFiltered();
+    }
+    
+    
+    public void updateFiltered(){
+	// restore original values if filter was removed
+	if(filter == null){
+	
+	}
+    }
+	    
+	    
 }
