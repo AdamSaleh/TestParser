@@ -16,6 +16,13 @@ import java.util.*;
  */
 public class MatrixBuildTestResults extends BaseResult implements TestResults {
     
+    
+    /*
+     * Many of these variables exist in two forms - filtered and original (
+     * indicated by Orig). Original ones don`t change when working with filter,
+     * but filtered field change based on outputs from filter. 
+     */
+    
     private List<MethodResult> passedTests = new ArrayList<MethodResult>();
     private List<MethodResult> failedTests = new ArrayList<MethodResult>();
     private List<MethodResult> skippedTests = new ArrayList<MethodResult>();
@@ -27,6 +34,7 @@ public class MatrixBuildTestResults extends BaseResult implements TestResults {
     private List<MethodResult> failedConfigurationMethodsOrig = new ArrayList<MethodResult>();
     private List<MethodResult> skippedConfigurationMethodsOrig = new ArrayList<MethodResult>();
     private List<TestResult> testList = new ArrayList<TestResult>();
+    private List<TestResult> testListOrig = new ArrayList<TestResult>();
     private int passedTestCount;
     private int failedTestCount;
     private int skippedTestCount;
@@ -53,8 +61,6 @@ public class MatrixBuildTestResults extends BaseResult implements TestResults {
 
     public MatrixBuildTestResults(String name) {
 	super(name);
-	failedConfigCount = 0;
-	skippedConfigCount = 0;
     }
     
     /** {@inheritDoc}
@@ -90,52 +96,58 @@ public class MatrixBuildTestResults extends BaseResult implements TestResults {
 	if(this.mrunResults.get(mrun.toString()) == null){
 	    
 	    // add run to runs of this build
-	    this.runs.add(mrun.toString());
+	    this.runsOrig.add(mrun.toString());
 	    
 	    // add run`s results to results
-	    this.runResults.add(results);
+	    this.runResultsOrig.add(results);
 	    
 	    // add mapping mrun -> mrun`s test results to mrunResults
 	    this.mrunResults.put(mrun.getDisplayName(), results);
 	    
 	    // add all tests from run test list to build`s test list
 	    for(TestResult res : results.getTestList()){
-		this.testList.add(res);
+		this.testListOrig.add(res);
 	    }
 	    
 	    // add all failed configs
 	    for(MethodResult res: results.getFailedConfigs()){
-		this.failedConfigurationMethods.add(res);
+		this.failedConfigurationMethodsOrig.add(res);
 	    }
 	    
 	    // add all skipped configs
 	    for(MethodResult res: results.getSkippedConfigs()){
-		this.skippedConfigurationMethods.add(res);
+		this.skippedConfigurationMethodsOrig.add(res);
 	    }
 	    
 	    // add all failed tests
 	    for(MethodResult res: results.getFailedTests()){
-		this.failedTests.add(res);
+		this.failedTestsOrig.add(res);
 	    }
 	    
 	    // add all skipped tests
 	    for(MethodResult res: results.getSkippedTests()){
-		this.skippedTests.add(res);
+		this.skippedTestsOrig.add(res);
 	    }
 	    
 	    //add all passed tests
 	    for(MethodResult res: results.getPassedTests()){
-		this.passedTests.add(res);
+		this.passedTestsOrig.add(res);
 	    }
 	    
-	    // update calculated fields
+	    /* update filtered fields and  calculated fields - important
+	     * to do in this order 
+	     */
+	    updateFiltered();	    
 	    this.tally();
+	    
 	    
 	    if (results.getFailedTestCount() > 0){
 		owner.setResult(Result.UNSTABLE);
 	    } else {
 		owner.setResult(Result.SUCCESS);
 	    }
+	    
+	    
 	    return true;
 	}
 	return false;
@@ -340,7 +352,11 @@ public class MatrixBuildTestResults extends BaseResult implements TestResults {
     public void updateFiltered(){
 	// restore original values if filter was removed
 	if(filter == null){
-	
+	    passedTests = passedTestsOrig;
+	    failedTests = failedTestsOrig;
+	    skippedTests = skippedTestsOrig;
+	    failedConfigurationMethods = failedConfigurationMethodsOrig;
+	    skippedConfigurationMethods = skippedConfigurationMethodsOrig;
 	}
     }
 	    
