@@ -16,35 +16,19 @@ import java.util.*;
  */
 public class MatrixBuildTestResults extends BaseResult implements TestResults {
     
-    
-    /*
-     * Many of these variables exist in two forms - filtered and original (
-     * indicated by Orig). Original ones don`t change when working with filter,
-     * but filtered field change based on outputs from filter. 
-     */
-    
-    private List<MethodResult> passedTestsFiltered = new ArrayList<MethodResult>();
-    private List<MethodResult> failedTestsFiltered = new ArrayList<MethodResult>();
-    private List<MethodResult> skippedTestsFiltered = new ArrayList<MethodResult>();
-    private List<MethodResult> failedConfigurationMethodsFiltered = new ArrayList<MethodResult>();
-    private List<MethodResult> skippedConfigurationMethodsFiltered = new ArrayList<MethodResult>();
-    
     private List<MethodResult> passedTests = new ArrayList<MethodResult>();
     private List<MethodResult> failedTests = new ArrayList<MethodResult>();
     private List<MethodResult> skippedTests = new ArrayList<MethodResult>();
     private List<MethodResult> failedConfigurationMethods = new ArrayList<MethodResult>();
     private List<MethodResult> skippedConfigurationMethods = new ArrayList<MethodResult>();
     
-    private List<TestResult> testListFiltered = new ArrayList<TestResult>();
     private List<TestResult> testList = new ArrayList<TestResult>();
     
     // stores list of all run`s tests: only one for freestyle project, multiple for matrix
-    private List<TestResults> runResultsFiltered = new ArrayList<TestResults>();
     private List<TestResults> runResults = new ArrayList<TestResults>();
     
     
     // stores list of all runs; only one for freestyle project, multiple for matrix
-    private List<String> runsFiltered = new ArrayList<String>();
     private List<String> runs = new ArrayList<String>();
     
     // stores mapping matrix run -> matrix run`s test results
@@ -88,26 +72,29 @@ public class MatrixBuildTestResults extends BaseResult implements TestResults {
      * @param results	
      * @return		false if this run is already mapped to results
      */
-    public boolean addMatrixRunTestResults(MatrixRun mrun, TestResults tr){
+    public boolean addMatrixRunTestResults(MatrixRun mrun, TestResults results){
 	
-	
-	if(! (tr instanceof MatrixRunTestResults)) {
+	if(! (results instanceof MatrixRunTestResults)) {
 	    return false;
 	}
 	
-	MatrixRunTestResults results = (MatrixRunTestResults) tr;
+	return addMatrixRunTestResults(mrun.toString(), (MatrixRunTestResults)results);
+    }
+    
+    
+    private boolean addMatrixRunTestResults(String mrun, MatrixRunTestResults results){
 	
 	// test if already added
-	if(this.mrunResults.get(mrun.toString()) == null){
+	if(this.mrunResults.get(mrun) == null){
 	    
 	    // add run to runs of this build
-	    this.runs.add(mrun.toString());
+	    this.runs.add(mrun);
 	    
 	    // add run`s results to results
 	    this.runResults.add(results);
 	    
 	    // add mapping mrun -> mrun`s test results to mrunResults
-	    this.mrunResults.put(mrun.getDisplayName(), results);
+	    this.mrunResults.put(mrun, results);
 	    
 	    // add all tests from run test list to build`s test list
 	    for(TestResult res : results.getTestList()){
@@ -142,7 +129,7 @@ public class MatrixBuildTestResults extends BaseResult implements TestResults {
 	    /* update filtered fields and  calculated fields - important
 	     * to do in this order 
 	     */
-	    updateFiltered();	    
+	    this.updateFiltered();	    
 	    this.tally();
 	    
 	    
@@ -183,42 +170,42 @@ public class MatrixBuildTestResults extends BaseResult implements TestResults {
      */
     @Override
     public List<MethodResult> getFailedConfigs() {
-	return failedConfigurationMethodsFiltered;
+	return failedConfigurationMethods;
     }
 
     /** {@inheritDoc}
      */
     @Override
     public List<MethodResult> getSkippedConfigs() {
-	return skippedConfigurationMethodsFiltered;
+	return skippedConfigurationMethods;
     }
     
     /** {@inheritDoc}
      */
     @Override
     public List<MethodResult> getFailedTests(){
-	return failedTestsFiltered;
+	return failedTests;
     }
 
     /** {@inheritDoc}
      */
     @Override
     public List<MethodResult> getSkippedTests(){
-	return skippedTestsFiltered;
+	return skippedTests;
     }
 
     /** {@inheritDoc}
      */
     @Override
     public List<MethodResult> getPassedTests(){
-	return passedTestsFiltered;
+	return passedTests;
     }
     
     /** {@inheritDoc}
      */
     @Override
     public List<TestResult> getTestList(){
-	return testListFiltered;
+	return testList;
     }
     
     /** {@inheritDoc}
@@ -253,7 +240,7 @@ public class MatrixBuildTestResults extends BaseResult implements TestResults {
      */
     @Override
     public List<TestResults> getRunResults(){
-	    return runResultsFiltered;
+	    return runResults;
     }
     
     /** {@inheritDoc}
@@ -297,14 +284,14 @@ public class MatrixBuildTestResults extends BaseResult implements TestResults {
      */
     @Override
     public void tally() {
-	failedConfigCount = failedConfigurationMethodsFiltered.size();
-	skippedConfigCount = skippedConfigurationMethodsFiltered.size();
-	failedTestCount = failedTestsFiltered.size();
-	passedTestCount = passedTestsFiltered.size();
-	skippedTestCount = skippedTestsFiltered.size();
+	failedConfigCount = failedConfigurationMethods.size();
+	skippedConfigCount = skippedConfigurationMethods.size();
+	failedTestCount = failedTests.size();
+	passedTestCount = passedTests.size();
+	skippedTestCount = skippedTests.size();
 	totalTestCount = passedTestCount + failedTestCount + skippedTestCount;
 	packageMap.clear();
-	for (TestResult _test : testListFiltered) {
+	for (TestResult _test : testList) {
 	    for (ClassResult _class : _test.getClassList()) {
 		String pkg = _class.getName();
 		int lastDot = pkg.lastIndexOf('.');
@@ -340,7 +327,7 @@ public class MatrixBuildTestResults extends BaseResult implements TestResults {
 
     @Override
     public List<String> getRuns() {
-	return runsFiltered;
+	return runs;
     }
     
     public void addFilter(Filter filter){
@@ -353,28 +340,33 @@ public class MatrixBuildTestResults extends BaseResult implements TestResults {
 	updateFiltered();
     }
     
-    
+    /**
+     * Updates filtered fields. If filter is null, all original values from all
+     * children runs are added, if filter is present, results from only those 
+     * runs are included that pass the filter.
+     */
     public void updateFiltered(){
-	// restore original values if filter was removed
-	if(filter == null){
-	    
-	    // FIXME: remove all Filtered variables, no need for them, update from
-	    // mrunResults !!!
-	    passedTestsFiltered = passedTests;
-	    failedTestsFiltered = failedTests;
-	    skippedTestsFiltered = skippedTests;
-	    failedConfigurationMethodsFiltered = failedConfigurationMethods;
-	    skippedConfigurationMethodsFiltered = skippedConfigurationMethods;
-	    runResultsFiltered = runResults;
-	    runsFiltered = runs;
-	    testListFiltered = testList;
-	} else {	    
-	    //FIXME: impement
-	    
-	    for (String mrun: runs){
-		if(filter.getConfiguration(mrun)){
-		    
-		}
+	
+	passedTests.clear();
+	failedTests.clear();
+	skippedTests.clear();
+	failedConfigurationMethods.clear();
+	skippedConfigurationMethods.clear();
+	runs.clear();
+	runResults.clear();
+	testList.clear();
+
+	for (String mrun: runs){
+	    // either filter is null => add all, or filter is present, then filter
+	    if(filter.isIncluded(mrun) || filter == null){
+		passedTests.addAll(mrunResults.get(mrun).getPassedTests());
+		failedTests.addAll(mrunResults.get(mrun).getFailedTests());
+		skippedTests.addAll(mrunResults.get(mrun).getSkippedTests());
+		failedConfigurationMethods.addAll(mrunResults.get(mrun).getFailedConfigs());
+		skippedConfigurationMethods.addAll(mrunResults.get(mrun).getSkippedConfigs());
+		runs.add(mrun);
+		runResults.add(mrunResults.get(mrun));
+		testList.addAll(mrunResults.get(mrun).getTestList());		    
 	    }
 	}
     }
