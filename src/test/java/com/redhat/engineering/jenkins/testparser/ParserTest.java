@@ -4,27 +4,24 @@
  */
 package com.redhat.engineering.jenkins.testparser;
 
-import com.redhat.engineering.jenkins.testparser.results.MethodResult;
 import com.redhat.engineering.jenkins.testparser.results.PackageResult;
 import com.redhat.engineering.jenkins.testparser.results.TestResults;
 import hudson.FilePath;
-import hudson.matrix.MatrixBuild;
-import hudson.matrix.MatrixProject;
 import java.io.File;
 import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Map;
-import org.junit.*;
 import static org.junit.Assert.*;
+import org.junit.*;
 
 /**
  *
  * @author Jan Rusnacko (jrusnack at redhat.com)
  */
-public class ReportPluginParserTest {
+public class ParserTest {
     
-    public ReportPluginParserTest() {
+    public ParserTest() {
     }
 
     @BeforeClass
@@ -46,7 +43,7 @@ public class ReportPluginParserTest {
     @Test
    public void testTestngXmlWithExistingResultXml() {
       String filename = "sample-testng-results.xml";
-      URL resource = ReportPluginParserTest.class.getClassLoader().getResource(filename);
+      URL resource = ParserTest.class.getClassLoader().getResource(filename);
       assertNotNull(resource);
       TestResults results = (TestResults)getResults(resource.getFile());
       assertFalse("Collection shouldn't have been empty", results.getTestList().isEmpty());
@@ -65,7 +62,7 @@ public class ReportPluginParserTest {
    @Test
    public void testTestngXmlWithSameTestNameDiffSuites() {
       String filename = "testng-results-same-test.xml";
-      URL resource = ReportPluginParserTest.class.getClassLoader().getResource(filename);
+      URL resource = ParserTest.class.getClassLoader().getResource(filename);
       junit.framework.Assert.assertNotNull(resource);
       TestResults results = (TestResults)getResults(resource.getFile());
       junit.framework.Assert.assertFalse("Collection shouldn't have been empty", results.getTestList().isEmpty());
@@ -80,7 +77,7 @@ public class ReportPluginParserTest {
    @Test
    public void testTestngXmlWithExistingResultXmlGetsTheRightDurations() {
       String filename = "sample-testng-dp-result.xml";
-      URL resource = ReportPluginParserTest.class.getClassLoader().getResource(filename);
+      URL resource = ParserTest.class.getClassLoader().getResource(filename);
       junit.framework.Assert.assertNotNull(resource);
       TestResults results = (TestResults)getResults(resource.getFile());
       junit.framework.Assert.assertFalse("Collection shouldn't have been empty", results.getTestList().isEmpty());
@@ -105,14 +102,14 @@ public class ReportPluginParserTest {
 
    @Test
    public void parseTestNG() {
-      ClassLoader cl = ReportPluginParserTest.class.getClassLoader();
+      ClassLoader cl = ParserTest.class.getClassLoader();
       TestResults results = (TestResults)getResults(cl.getResource("testng-results-testng.xml").getFile());
       results.tally();
    }
 
    @Test
    public void testParseEmptyException() {
-      ClassLoader cl = ReportPluginParserTest.class.getClassLoader();
+      ClassLoader cl = ParserTest.class.getClassLoader();
       TestResults results = (TestResults)getResults(cl.getResource("sample-testng-empty-exp.xml").getFile());
       results.tally();
       junit.framework.Assert.assertEquals(1, results.getPassedTestCount());

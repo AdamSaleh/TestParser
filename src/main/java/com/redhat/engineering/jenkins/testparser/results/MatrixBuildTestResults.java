@@ -1,6 +1,7 @@
 
 package com.redhat.engineering.jenkins.testparser.results;
 
+import hudson.matrix.Combination;
 import hudson.matrix.MatrixBuild;
 import hudson.matrix.MatrixRun;
 import hudson.model.AbstractBuild;
@@ -24,17 +25,19 @@ public class MatrixBuildTestResults extends BaseResult implements TestResults {
     
     private List<TestResult> testList = new ArrayList<TestResult>();
     
-    // stores list of all run`s tests: only one for freestyle project, multiple for matrix
+    // stores list of all tests of children runs
     private List<TestResults> runResults = new ArrayList<TestResults>();
     
-    
-    // stores list of all runs; only one for freestyle project, multiple for matrix
+    // stores list of all runs
     private List<String> runs = new ArrayList<String>();
+    
+    // stores mapping matrix run -> it`s combination
+    private Map<String, Combination> runCombinations = new HashMap<String,Combination>();
     
     // stores mapping matrix run -> matrix run`s test results
     private Map<String, MatrixRunTestResults> mrunResults = new HashMap<String, MatrixRunTestResults>();
-    private Filter filter;
     
+    private Filter filter; 
     
     // these variables are updated from filtered field by tally()
     private int passedTestCount;
@@ -45,6 +48,7 @@ public class MatrixBuildTestResults extends BaseResult implements TestResults {
     private int skippedConfigCount;
     private long duration;    
     private Map<String, PackageResult> packageMap = new HashMap<String, PackageResult>();
+   
     
 
     public MatrixBuildTestResults(String name) {
@@ -64,6 +68,8 @@ public class MatrixBuildTestResults extends BaseResult implements TestResults {
 	}
     }
     
+    
+    
     /**
      * Add test results of child matrix run to this build`s results. 
      * Duplicates are not added.
@@ -72,29 +78,25 @@ public class MatrixBuildTestResults extends BaseResult implements TestResults {
      * @param results	
      * @return		false if this run is already mapped to results
      */
-    public boolean addMatrixRunTestResults(MatrixRun mrun, TestResults results){
+    public boolean addMatrixRunTestResults(MatrixRun mrun, TestResults tr){
 	
-	if(! (results instanceof MatrixRunTestResults)) {
+	if(! (tr instanceof MatrixRunTestResults)) {
 	    return false;
 	}
-	
-	return addMatrixRunTestResults(mrun.toString(), (MatrixRunTestResults)results);
-    }
-    
-    
-    private boolean addMatrixRunTestResults(String mrun, MatrixRunTestResults results){
+	 
+	MatrixRunTestResults results = (MatrixRunTestResults) tr;
 	
 	// test if already added
-	if(this.mrunResults.get(mrun) == null){
+	if(this.mrunResults.get(mrun.toString()) == null){
 	    
 	    // add run to runs of this build
-	    this.runs.add(mrun);
+	    this.runs.add(mrun.toString());
 	    
-	    // add run`s results to results
-	    this.runResults.add(results);
+	    // add mapping mrun -> it`s combination
+	    this.runCombinations.put(mrun.toString(), mrun.getParent().getCombination());
 	    
 	    // add mapping mrun -> mrun`s test results to mrunResults
-	    this.mrunResults.put(mrun, results);
+	    this.mrunResults.put(mrun.toString(), results);
 	    
 	    // add all tests from run test list to build`s test list
 	    for(TestResult res : results.getTestList()){
@@ -240,7 +242,7 @@ public class MatrixBuildTestResults extends BaseResult implements TestResults {
      */
     @Override
     public List<TestResults> getRunResults(){
-	    return runResults;
+	return runResults;
     }
     
     /** {@inheritDoc}
@@ -358,7 +360,7 @@ public class MatrixBuildTestResults extends BaseResult implements TestResults {
 
 	for (String mrun: runs){
 	    // either filter is null => add all, or filter is present, then filter
-	    if(filter.isIncluded(mrun) || filter == null){
+	    if(filter.isIncluded(runCombinations.get(mrun)) || filter == null){
 		passedTests.addAll(mrunResults.get(mrun).getPassedTests());
 		failedTests.addAll(mrunResults.get(mrun).getFailedTests());
 		skippedTests.addAll(mrunResults.get(mrun).getSkippedTests());
