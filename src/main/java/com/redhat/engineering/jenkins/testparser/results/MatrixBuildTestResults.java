@@ -58,13 +58,13 @@ public class MatrixBuildTestResults extends BaseResult implements TestResults {
     /** {@inheritDoc}
      */
     @Override
-    public void setOwner(AbstractBuild<?, ?> owner) {
+    public void setOwner(AbstractBuild<?, ?> owner) throws IllegalArgumentException{
 	
 	if(owner instanceof MatrixBuild ){
 	    this.owner = owner;
 	} else{
-	    throw new IllegalArgumentException("Owner of MatrixRunTestResuls"+ 
-		    " must be matrix run");
+	    throw new IllegalArgumentException("Owner of MatrixBuildTestResuls"+ 
+		    " must be matrix build");
 	}
     }
     

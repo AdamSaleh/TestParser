@@ -101,7 +101,7 @@ public class MatrixRunTestResults extends BaseResult implements TestResults{
     }
 
     @Override
-    public void setOwner(AbstractBuild<?, ?> owner) {
+    public void setOwner(AbstractBuild<?, ?> owner) throws IllegalArgumentException{
 	
 	if(owner instanceof MatrixRun ){
 	    this.owner = owner;
