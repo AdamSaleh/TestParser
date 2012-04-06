@@ -74,11 +74,13 @@ public class MatrixBuildTestResults extends BaseResult implements TestResults {
      * Add test results of child matrix run to this build`s results. 
      * Duplicates are not added.
      * 
-     * @param mrun	matrix run to which results correspond to
-     * @param results	
-     * @return		false if this run is already mapped to results
+     * @param mrun	    matrix run to which results correspond to
+     * @param combination   matrix run`s combination 
+     * @param results	 
+     * @return		    false if this run is already mapped to results
      */
-    public boolean addMatrixRunTestResults(MatrixRun mrun, TestResults tr){
+    public boolean addMatrixRunTestResults(String mrun, Combination combination, TestResults tr){
+	
 	
 	if(! (tr instanceof MatrixRunTestResults)) {
 	    return false;
@@ -87,16 +89,16 @@ public class MatrixBuildTestResults extends BaseResult implements TestResults {
 	MatrixRunTestResults results = (MatrixRunTestResults) tr;
 	
 	// test if already added
-	if(this.mrunResults.get(mrun.toString()) == null){
+	if(this.mrunResults.get(mrun) == null){
 	    
 	    // add run to runs of this build
-	    this.runs.add(mrun.toString());
+	    this.runs.add(mrun);
 	    
 	    // add mapping mrun -> it`s combination
-	    this.runCombinations.put(mrun.toString(), mrun.getParent().getCombination());
+	    this.runCombinations.put(mrun, combination);
 	    
 	    // add mapping mrun -> mrun`s test results to mrunResults
-	    this.mrunResults.put(mrun.toString(), results);
+	    this.mrunResults.put(mrun, results);
 	    
 	    // add all tests from run test list to build`s test list
 	    for(TestResult res : results.getTestList()){
