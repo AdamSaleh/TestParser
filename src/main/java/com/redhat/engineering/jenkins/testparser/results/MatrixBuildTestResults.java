@@ -35,7 +35,7 @@ public class MatrixBuildTestResults extends BaseResult implements TestResults {
     private Map<String, Combination> runCombinations = new HashMap<String,Combination>();
     
     // stores mapping matrix run -> matrix run`s test results
-    private Map<String, MatrixRunTestResults> mrunResults = new HashMap<String, MatrixRunTestResults>();
+    private Map<String, MatrixRunTestResults> mapRunResults = new HashMap<String, MatrixRunTestResults>();
     
     private Filter filter; 
     
@@ -79,6 +79,7 @@ public class MatrixBuildTestResults extends BaseResult implements TestResults {
      * @param results	 
      * @return		    false if this run is already mapped to results
      */
+    
     public boolean addMatrixRunTestResults(String mrun, Combination combination, TestResults tr){
 	
 	
@@ -89,7 +90,7 @@ public class MatrixBuildTestResults extends BaseResult implements TestResults {
 	MatrixRunTestResults results = (MatrixRunTestResults) tr;
 	
 	// test if already added
-	if(this.mrunResults.get(mrun) == null){
+	if(this.mapRunResults.get(mrun) == null){
 	    
 	    // add run to runs of this build
 	    this.runs.add(mrun);
@@ -98,7 +99,7 @@ public class MatrixBuildTestResults extends BaseResult implements TestResults {
 	    this.runCombinations.put(mrun, combination);
 	    
 	    // add mapping mrun -> mrun`s test results to mrunResults
-	    this.mrunResults.put(mrun, results);
+	    this.mapRunResults.put(mrun, results);
 	    
 	    // add all tests from run test list to build`s test list
 	    for(TestResult res : results.getTestList()){
@@ -337,6 +338,7 @@ public class MatrixBuildTestResults extends BaseResult implements TestResults {
     public void addFilter(Filter filter){
 	this.filter = filter;
 	updateFiltered();
+	tally();
     }
 
     public void removeFilter(){
@@ -349,6 +351,7 @@ public class MatrixBuildTestResults extends BaseResult implements TestResults {
      * children runs are added, if filter is present, results from only those 
      * runs are included that pass the filter.
      */
+    //FIXME: broken
     public void updateFiltered(){
 	
 	passedTests.clear();
@@ -356,21 +359,19 @@ public class MatrixBuildTestResults extends BaseResult implements TestResults {
 	skippedTests.clear();
 	failedConfigurationMethods.clear();
 	skippedConfigurationMethods.clear();
-	runs.clear();
 	runResults.clear();
 	testList.clear();
 
 	for (String mrun: runs){
 	    // either filter is null => add all, or filter is present, then filter
-	    if(filter.isIncluded(runCombinations.get(mrun)) || filter == null){
-		passedTests.addAll(mrunResults.get(mrun).getPassedTests());
-		failedTests.addAll(mrunResults.get(mrun).getFailedTests());
-		skippedTests.addAll(mrunResults.get(mrun).getSkippedTests());
-		failedConfigurationMethods.addAll(mrunResults.get(mrun).getFailedConfigs());
-		skippedConfigurationMethods.addAll(mrunResults.get(mrun).getSkippedConfigs());
-		runs.add(mrun);
-		runResults.add(mrunResults.get(mrun));
-		testList.addAll(mrunResults.get(mrun).getTestList());		    
+	    if(filter == null || filter.isIncluded(runCombinations.get(mrun)) ){
+		passedTests.addAll(mapRunResults.get(mrun).getPassedTests());
+		failedTests.addAll(mapRunResults.get(mrun).getFailedTests());
+		skippedTests.addAll(mapRunResults.get(mrun).getSkippedTests());
+		failedConfigurationMethods.addAll(mapRunResults.get(mrun).getFailedConfigs());
+		skippedConfigurationMethods.addAll(mapRunResults.get(mrun).getSkippedConfigs());
+		runResults.add(mapRunResults.get(mrun));
+		testList.addAll(mapRunResults.get(mrun).getTestList());		    
 	    }
 	}
     }
