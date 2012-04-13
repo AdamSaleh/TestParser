@@ -10,7 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * This class holds information about which configurations should be present 
+ * This class holds information about which configuration should be present 
  * in report and which should not. After this class is fed to MatrixBuildTestResults,
  * we can fetch results from only certain subset of matrix runs (correspoding to 
  * build) controlled by this class.
@@ -21,7 +21,7 @@ public class Filter {
     /**
      * Determines whether a configuration should be used in reports or not
      */
-    Map<Combination, Boolean> configurations = new HashMap<Combination, Boolean>();
+    Map<Combination, Boolean> configuration = new HashMap<Combination, Boolean>();
     String combinationFilter;
 
     private MatrixBuildTestResults owner;
@@ -32,7 +32,7 @@ public class Filter {
 	this.uuid = uuid;
 	this.axisList = axisList;
 	for(Combination c: axisList.list()){
-	    configurations.put(c, false);
+	    configuration.put(c, false);
 	}
     }
 
@@ -54,8 +54,9 @@ public class Filter {
      *            {@link hudson.model.Run} or not
      */
     public void setConfiguration(Combination combination, boolean include) {
-	this.configurations.put(combination, include);
+	this.configuration.put(combination, include);
     }
+    
     /**
      * Remove a configuration from the filter
      * 
@@ -63,12 +64,12 @@ public class Filter {
      *            as its {@link hudson.matrix.Combination}
      */
     public void removeConfiguration(Combination combination) {
-	configurations.remove(combination);
+	configuration.remove(combination);
     }
     
     /**
      * Returns whether or not to include the {@link hudson.model.Run}
-     * If the combination is not in the database, the method returns false,
+     * If the combination is not explicitly checked, the method returns false,
      * meaning the run will not be included in report.
      * 
      * @param combination A {@link hudson.matrix.MatrixConfiguration} given
@@ -77,7 +78,7 @@ public class Filter {
      *         {@link hudson.model.Run}
      */
     public boolean getConfiguration(Combination combination) {	
-	    return configurations.get(combination);	
+	    return configuration.get(combination);	
     }
     
     /**
@@ -90,13 +91,14 @@ public class Filter {
 	return getConfiguration(combination);
     }
     
-    private void rebuildConfigurations(){
+    
+    private void rebuildConfiguration(){
 	
-	for(Combination c: configurations.keySet()){
+	for(Combination c: configuration.keySet()){
 	    if(combinationFilter!= null && c.evalGroovyExpression(axisList, combinationFilter)){
-		configurations.put(c,true);
+		configuration.put(c,true);
 	    } else{
-		configurations.put(c, false);
+		configuration.put(c, false);
 	    }
 	}
 	
@@ -104,11 +106,13 @@ public class Filter {
     
     public void addCombinationFilter(String combinationFilter){
 	this.combinationFilter = combinationFilter;
-	rebuildConfigurations();
+	rebuildConfiguration();
     }
     
     public void removeCombinationFilter(){
-	this.combinationFilter = null;
-	rebuildConfigurations();
+	if(combinationFilter != null){
+	    combinationFilter = null;
+	    rebuildConfiguration();
+	}
     }
 }
