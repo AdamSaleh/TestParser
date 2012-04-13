@@ -4,6 +4,7 @@
  */
 package com.redhat.engineering.jenkins.testparser.results;
 
+import hudson.matrix.AxisList;
 import hudson.matrix.Combination;
 import java.util.HashMap;
 import java.util.Map;
@@ -20,13 +21,19 @@ public class Filter {
     /**
      * Determines whether a configuration should be used in reports or not
      */
-    Map<String, Boolean> configurations = new HashMap<String, Boolean>();
+    Map<Combination, Boolean> configurations = new HashMap<Combination, Boolean>();
+    String combinationFilter;
 
     private MatrixBuildTestResults owner;
     public String uuid;
+    private AxisList axisList;
 
-    public Filter(String uuid){
+    public Filter(String uuid, AxisList axisList){
 	this.uuid = uuid;
+	this.axisList = axisList;
+	for(Combination c: axisList.list()){
+	    configurations.put(c, false);
+	}
     }
 
     public void setOwner(MatrixBuildTestResults owner){
@@ -46,8 +53,8 @@ public class Filter {
      * @param include A boolean to determine whether to include the
      *            {@link hudson.model.Run} or not
      */
-    public void addConfiguration(Combination combination, boolean include) {
-	this.configurations.put(combination.toString(), include);
+    public void setConfiguration(Combination combination, boolean include) {
+	this.configurations.put(combination, include);
     }
     /**
      * Remove a configuration from the filter
@@ -56,7 +63,7 @@ public class Filter {
      *            as its {@link hudson.matrix.Combination}
      */
     public void removeConfiguration(Combination combination) {
-	configurations.remove(combination.toString());
+	configurations.remove(combination);
     }
     
     /**
@@ -69,11 +76,8 @@ public class Filter {
      * @return A boolean determining whether or nor to include the
      *         {@link hudson.model.Run}
      */
-    public boolean getConfiguration(Combination combination) {
-	if (configurations.containsKey(combination.toString())) {
-	    return configurations.get(combination.toString());
-	}
-	return false;
+    public boolean getConfiguration(Combination combination) {	
+	    return configurations.get(combination);	
     }
     
     /**
@@ -86,4 +90,25 @@ public class Filter {
 	return getConfiguration(combination);
     }
     
+    private void rebuildConfigurations(){
+	
+	for(Combination c: configurations.keySet()){
+	    if(combinationFilter!= null && c.evalGroovyExpression(axisList, combinationFilter)){
+		configurations.put(c,true);
+	    } else{
+		configurations.put(c, false);
+	    }
+	}
+	
+    }
+    
+    public void addCombinationFilter(String combinationFilter){
+	this.combinationFilter = combinationFilter;
+	rebuildConfigurations();
+    }
+    
+    public void removeCombinationFilter(){
+	this.combinationFilter = null;
+	rebuildConfigurations();
+    }
 }
