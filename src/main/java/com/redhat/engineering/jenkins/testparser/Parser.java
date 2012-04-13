@@ -112,20 +112,20 @@ public class Parser {
    public TestResults parse(FilePath[] paths, boolean isMulticonf) {
       if (null == paths) {
          log("File paths not specified. paths var is null. Returning empty test results.");
-         if (isMulticonf){
+        // if (isMulticonf){
 	    return new MatrixRunTestResults("");
-	 } else{
+	 //} else{
 	    // TODO: [freestyle] implement
-	    return null;
-	 }
+	 //   return null;
+	 //}
       }
 
-      if (isMulticonf){
+      //if (isMulticonf){
 	  finalResults = new MatrixRunTestResults(UUID.randomUUID().toString());
-      } else{
+      //} else{
 	  // TODO: [freestyle] implement
-	  finalResults = null;
-      }
+      //	  finalResults = null;
+      //}*/
       
       
       for (FilePath path : paths) {
