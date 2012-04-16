@@ -32,7 +32,7 @@ public class Filter {
 	this.uuid = uuid;
 	this.axisList = axisList;
 	for(Combination c: axisList.list()){
-	    configuration.put(c, false);
+	    configuration.put(c, true);
 	}
     }
 
@@ -69,8 +69,8 @@ public class Filter {
     
     /**
      * Returns whether or not to include the {@link hudson.model.Run}
-     * If the combination is not explicitly checked, the method returns false,
-     * meaning the run will not be included in report.
+     * If the combination is not explicitly checked, the method returns true,
+     * meaning the run will be included in report.
      * 
      * @param combination A {@link hudson.matrix.MatrixConfiguration} given
      *            as its {@link hudson.matrix.Combination}
@@ -78,7 +78,10 @@ public class Filter {
      *         {@link hudson.model.Run}
      */
     public boolean getConfiguration(Combination combination) {	
+	if(configuration.containsKey(combination)){    
 	    return configuration.get(combination);	
+	}
+	return true;
     }
     
     /**
@@ -93,7 +96,6 @@ public class Filter {
     
     
     private void rebuildConfiguration(){
-	
 	for(Combination c: configuration.keySet()){
 	    if(combinationFilter!= null && c.evalGroovyExpression(axisList, combinationFilter)){
 		configuration.put(c,true);
@@ -109,10 +111,23 @@ public class Filter {
 	rebuildConfiguration();
     }
     
+    /**
+     * Removes Groovy expression provided for filtering and resets combinations to
+     * false
+     */
     public void removeCombinationFilter(){
 	if(combinationFilter != null){
 	    combinationFilter = null;
-	    rebuildConfiguration();
+	}
+	resetCombinationsFalse();
+    }
+    
+    /**
+     * Set all combinations not to be included
+     */
+    public void resetCombinationsFalse(){
+	for(Combination c: configuration.keySet()){
+	    configuration.put(c, false);
 	}
     }
 }
