@@ -95,7 +95,7 @@ public class Filter {
     }
     
     
-    private void rebuildConfiguration(){
+    private void rebuildConfiguration(){    
 	for(Combination c: configuration.keySet()){
 	    if(combinationFilter!= null && c.evalGroovyExpression(axisList, combinationFilter)){
 		configuration.put(c,true);

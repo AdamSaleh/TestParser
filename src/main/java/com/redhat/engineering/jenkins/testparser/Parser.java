@@ -2,6 +2,7 @@ package com.redhat.engineering.jenkins.testparser;
 
 import com.redhat.engineering.jenkins.testparser.results.*;
 import hudson.FilePath;
+import hudson.matrix.MatrixRun;
 import hudson.model.AbstractBuild;
 import java.io.*;
 import java.text.DateFormat;
@@ -580,6 +581,51 @@ public class Parser {
 	    return false;
 	}
 	return true;
+    }
+    
+    static TestResults loadResults(AbstractBuild<?, ?> build, PrintStream logger) {
+	
+	FilePath testngDir = getReportDir(build);
+	FilePath[] paths = null;
+	try {
+	    paths = testngDir.list("test-results*.xml");
+	} catch (Exception e) {
+	    //do nothing
+	}
+    
+	TestResults tr = null;
+	if (paths == null) {
+	    if(build instanceof MatrixRun){
+		tr = new MatrixRunTestResults(UUID.randomUUID().toString());
+		tr.setOwner(build);
+		return tr;
+	    } else {
+		// TODO: [freestyle]
+		tr = new MatrixRunTestResults(UUID.randomUUID().toString());
+		tr.setOwner(build);
+		return tr;
+		
+	    }
+	}
+	    
+	Parser parser = new Parser(logger);
+	if(build instanceof MatrixRun){
+	    TestResults result = parser.parse(paths, true);
+	    result.setOwner(build);
+	    return result;
+	} else{
+	    // TODO: [freestyle]
+	    tr = new MatrixRunTestResults("");
+	    tr.setOwner(build);
+	    return tr;
+	}
+    }
+    
+    /**
+    * Gets the directory to store report files
+    */
+    public static FilePath getReportDir(AbstractBuild<?,?> build) {
+	return new FilePath(new File(build.getRootDir(), "report-plugin"));
     }
     
 }
