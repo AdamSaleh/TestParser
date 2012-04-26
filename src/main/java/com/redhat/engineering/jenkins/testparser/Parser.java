@@ -583,12 +583,12 @@ public class Parser {
 	return true;
     }
     
-    static TestResults loadResults(AbstractBuild<?, ?> build, PrintStream logger) {
+    public static TestResults loadResults(AbstractBuild<?, ?> build, PrintStream logger, String prefix) {
 	
 	FilePath testngDir = getReportDir(build);
 	FilePath[] paths = null;
 	try {
-	    paths = testngDir.list("test-results*.xml");
+	    paths = testngDir.list(prefix+"*.xml");
 	} catch (Exception e) {
 	    //do nothing
 	}
