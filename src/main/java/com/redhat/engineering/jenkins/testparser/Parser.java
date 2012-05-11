@@ -602,7 +602,7 @@ public class Parser {
 	    } else {
 		// TODO: [freestyle]
 		tr = new MatrixRunTestResults(UUID.randomUUID().toString());
-		tr.setOwner(build);
+		
 		return tr;
 		
 	    }
@@ -615,9 +615,9 @@ public class Parser {
 	    return result;
 	} else{
 	    // TODO: [freestyle]
-	    tr = new MatrixRunTestResults("");
-	    tr.setOwner(build);
-	    return tr;
+	    TestResults result = parser.parse(paths, true);
+	    
+	    return result;
 	}
     }
     

@@ -32,5 +32,11 @@
             <artifactId>jenkins-core</artifactId>
             <version>1.403</version>
         </dependency>
+        <dependency>
+            <groupId>jivesoftware</groupId>
+            <artifactId>smack</artifactId>
+            <version>3.2.0</version>
+            <type>jar</type>
+        </dependency>
     </dependencies>
 </project>
