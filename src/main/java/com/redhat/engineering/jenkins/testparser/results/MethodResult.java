@@ -137,5 +137,8 @@ public class MethodResult extends BaseResult {
     public void setException(MethodResultException exception) {
 	this.exception = exception;
     }
+    public MethodResultException getException() {
+	return this.exception;
+    }
     
 }

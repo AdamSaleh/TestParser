@@ -19,8 +19,6 @@ public abstract class BaseResult implements ModelObject, Serializable{
     protected final String name;
     protected BaseResult parent;
     
-	
-   
     public BaseResult(String name) {
 	this.name = name;
     }
